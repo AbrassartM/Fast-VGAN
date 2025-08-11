@@ -1,42 +1,472 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Information Coming Soon</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fast-VGAN Demo</title>
   <style>
     body {
-      background-color: #f9f9f9;
-      color: #333;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
-      text-align: center;
+      font-family: 'Arial', sans-serif;
+      background-color: #faf4d5;
+      color: #000000;
+      display: flex;
+      font-size: 14pt;
     }
-    .container {
+
+    header {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      background: #fff;
+      border-bottom: 1px solid #ccc;
+    }
+
+    nav {
+      position: fixed;
+      width: 220px;
+      height: 100vh;
+      background: #000000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+
+    }
+
+    nav h2 {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+    }
+
+    nav a {
+      color: #bbb;
+      text-decoration: none;
+      margin: 10px 0;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #fff;
+    }
+
+    .content {
+      margin-left: 250px;
       padding: 2rem;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 1000px;
+      margin-right: auto;
     }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
+
+    section {
+      margin-bottom: 60px;
     }
-    p {
-      font-size: 1rem;
+
+    h1, h2, h3 {
+      color: #222;
+    }
+
+    audio {
+      margin: 10px 0;
+      filter: invert(1);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin: 15px 0;
+    }
+
+    .abstract {
+      background: #faf4d5;
+      padding: 15px;
+      border-left: 4px solid #3c0253;
+      margin: 20px 0;
+    }
+    figure {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    figcaption {
+      font-size: 0.9rem;
       color: #666;
+      margin-top: 0.5rem;
     }
+    
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Information Coming Soon</h1>
-    <p>Details will be available shortly. Please check back later.</p>
+  <nav>
+    <h2 style="color: #ccc;">Contents</h2>
+    <a href="#abstract">Abstract</a>
+    <a href="#model">Model Introduction</a>
+    <a href="#conversion">Voice Conversion</a>
+    <a href="#f0">Pitch Shift and Time Stretching</a>
+    <a href="#expressive">Expressive Voice Conversion</a>
+    <a href="#references">References</a>
+  </nav>
+
+  <div class="content">
+    <section id="abstract">
+      <h1>Fast-VGAN: Lightweight Voice Conversion  with Explicit Control of F0 and Duration Parameters</h1>
+      <h3>Mathilde Abrassart, Nicolas Obin, Axel Roebel</h3>
+      <small><em>STMS Lab, IRCAM, CNRS, Sorbonne Université, Paris, France</em></small>
+      <div class="abstract">
+        <p>Precise control over speech characteristics, such as pitch, duration, and speech rate, remains a significant challenge in the field of voice conversion. The ability to manipulate parameters like pitch and syllable rate is an important element for effective identity conversion, but can also be used independently for voice transformation, achieving goals that were historically addressed by vocoder-based methods. 
+              In this work, we explore a convolutional neural network-based approach that aims to provide means for modifying fundamental frequency (F0), phoneme sequences, intensity, and speaker identity. Rather than relying on disentanglement techniques, our model is explicitly conditioned on these factors to generate mel spectrograms, which are then converted into waveforms using a universal neural vocoder. Accordingly, during inference, F0 contours, phoneme sequences, and speaker embeddings can be freely adjusted, allowing for intuitively controlled voice transformations.
+              We evaluate our approach on speaker conversion and expressive speech tasks using both perceptual and objective metrics. The results suggest that the proposed method offers substantial flexibility, while maintaining high intelligibility and speaker similarity.</p>
+        <p><a href="https://arxiv.org/pdf/2507.04817" target="_blank">View the paper online</a></p>
+      </div>
+    </section>
+
+    <section id="model">
+      <h2>Model Introduction</h2>
+      <p>Fast-VGAN [1] employs a series of 2D convolutional layers tailored to process temporally aligned sequences of F0, intensity, and phoneme representations. The architecture is designed to map these high-level temporal features into a target mel-spectrogram. To enable timbre control in a multi-speaker setting, we incorporate an additional conditioning input: a speaker identity embedding. This enables the model to account for and reproduce distinct vocal timbres associated with different speakers in the training corpus. </p>
+        
+      <figure>
+        <img src="figures/fvg_tot.svg" alt="Training phase" style="width: 100%;">
+        <figcaption style="text-align: center; font-size: 14pt;">Training and inference phase.</figcaption>
+      </figure>
+
+    </section>
+
+    <section id="conversion">
+      <h2>Voice Conversion</h2>
+      <h3>Baselines</h3>
+      <p style="margin-bottom: 20px;">
+        The model is compared against two voice conversion methods: ControlVC [2] and HiFi-VC [3]. ControlVC is a conditional GAN-based model that allows for fine-grained control over the conversion process, while HiFi-VC is a high-fidelity voice conversion model that uses a similar architecture but focuses on generating high-quality audio outputs.
+        Please note that all speakers are from the VCTK dataset [4] and have been seen during training, and the conversion is performed without any additional fine-tuning.
+      </p>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Source Speaker</th>
+            <th>Target Speaker</th>
+            <th>ControlVC</th>
+            <th>HiFi-VC</th>
+            <th>Fast-VGAN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
+            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp225s2tgtp241none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp225s2tgtp241none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp225s2tgtp241none.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
+            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp227s4tgtp231none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp227s4tgtp231none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp227s4tgtp231none.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
+            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp228s4tgtp229none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp228s4tgtp229none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp228s4tgtp229none.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
+            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp243s2tgtp237none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp243s2tgtp237none.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp243s2tgtp237none.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>   
+      <h3>Fast-VGAN versions</h3>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Source Speaker</th>
+            <th>Target Speaker</th>
+            <th>Fast-VGAN Amb</th>
+            <th>Fast-VGAN Dil</th>
+            <th>Fast-VGAN Amb+Dil</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
+            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp225s2tgtp241amb.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp225s2tgtp241dil.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp225s2tgtp241ambdil.wav"></audio></td>
+          </tr>
+          </tr>
+          <tr>
+            <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
+            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp227s4tgtp231amb.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp227s4tgtp231dil.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp227s4tgtp231ambdil.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
+            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp228s4tgtp229amb.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp228s4tgtp229dil.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp228s4tgtp229ambdil.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
+            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp243s2tgtp237amb.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp243s2tgtp237dil.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp243s2tgtp237ambdil.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>         
+    </section>
+
+    <section id="f0">
+      <h2>Pitch Shift and Time Stretching</h2>
+      <h3>Ambitus</h3>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Source Speaker</th>
+            <th>1/2 * Ambitus</th>
+            <th>2/3 * Ambitus</th>
+            <th>3/2 * Ambitus</th>
+            <th>2 * Ambitus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp241s4amb0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp241s4amb0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp241s4amb1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp241s4amb2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp231s2amb0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp231s2amb0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp231s2amb1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp231s2amb2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp229s2amb0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp229s2amb0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp229s2amb1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp229s2amb2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp237s4amb0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp237s4amb0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp237s4amb1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/ambitus/fastvgan_srcp237s4amb2.0.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>  
+
+      <h3>Pitch Shift</h3>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Source Speaker</th>
+            <th>1/2 * F0</th>
+            <th>2/3 * F0</th>
+            <th>3/2 * F0</th>
+            <th>2 * F0</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp241s4mul0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp241s4mul0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp241s4mul1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp241s4mul2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp231s2mul0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp231s2mul0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp231s2mul1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp231s2mul2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp229s2mul0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp229s2mul0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp229s2mul1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp229s2mul2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp237s4mul0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp237s4mul0.667.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp237s4mul1.498.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/f0/fastvgan_srcp237s4mul2.0.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>  
+
+      <h3>Phoneme Dilation</h3>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Source Speaker</th>
+            <th>1/2 * Speech rate</th>
+            <th>3/4 * Speech rate</th>
+            <th>3/2 * Speech rate</th>
+            <th>2 * Speech rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp241s4dil0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp241s4dil0.75.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp241s4dil1.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp241s4dil2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp231s2dil0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp231s2dil0.75.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp231s2dil1.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp231s2dil2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp229s2dil0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp229s2dil0.75.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp229s2dil1.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp229s2dil2.0.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp237s4dil0.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp237s4dil0.75.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp237s4dil1.5.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/dilation/fastvgan_srcp237s4dil2.0.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>  
+    </section>
+
+    <section id="expressive"></section>
+      <h2>Expressive Voice Conversion</h2>
+      <p>The VCTK training data have been augmented with four speakers from the Expresso dataset [5], using only their neutral utterances to allow the model to learn their timbre without exposure to expressive variations. At inference time, the expressive sentences are used from these same speakers to generate input features, allowing to assess the model’s ability to synthesize expressive speech despite never being trained on expressive data.</p>
+      <table style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr>
+            <th>Speaker 01</th>
+            <th>Speaker 02</th>
+            <th>Speaker 03</th>
+            <th>Speaker 04</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><p>Happy (original)</p><audio controls src="audio/originals/real_src01s1happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src02s2sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src03s1sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src04s2sad.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>Happy (synthetized)</p><audio controls src="audio/expresso/fastvgan_src01s1sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src02s2sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src03s1sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src04s2sad.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>Sad (original)</p><audio controls src="audio/originals/real_src01s1sad.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src02s2happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src03s1happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src04s2happy.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>Sad (synthetized)</p><audio controls src="audio/expresso/fastvgan_src01s1happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src02s2happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src03s1happy.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src04s2happy.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>Confused (original)</p><audio controls src="audio/originals/real_src01s1confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src02s2confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src03s1confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/originals/real_src04s2confused.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><p>Confused (synthetized)</p><audio controls src="audio/expresso/fastvgan_src01s1confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src02s2confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src03s1confused.wav"></audio></td>
+            <td><p> - </p><audio controls src="audio/expresso/fastvgan_src04s2confused.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>  
+    </section>
+
+    <section id="references"></section>
+      <h2>References</h2>
+      <p>[1] M. Abrassart, N. Obin and A. Roebel, "Fast-VGAN: Lightweight
+        <span style="display: block; margin-left: 20px;"> 
+          Voice Conversion with Explicit Control of F0 and Duration
+        </span>
+        <span style="display: block; margin-left: 20px;"> 
+          Parameters," in Speech Synthesis Workshop (SSW), 2025.
+        </span>
+      </p>
+      <p>
+        [2] M. Chen and Z. Duan, "ControlVC: Zero-Shot Voice Conversion 
+        <span style="display: block; margin-left: 20px;">
+        with Time-Varying Controls on Pitch and Speed,"
+        </span>
+        <span style="display: block; margin-left: 20px;">
+          in Interspeech, 2023, pp. 2098-2102.
+        </span>
+      </p>     
+      <p>[3] A. Kashkin, I. Karpukhin and S. Shishkin, "HiFi-VC: high
+        <span style="display: block; margin-left: 20px;"> 
+          Quality ASR-based Voice Conversion," in Speech Synthesis
+        </span>
+        <span style="display: block; margin-left: 20px;"> 
+          Workshop (SSW), 2023, pp. 100-105.
+        </span>
+      </p>
+      <p>[4] J. Yamagishi, C. Veaux, K. MacDonald et al., "CSTR VCTK
+        <span style="display: block; margin-left: 20px;"> 
+          Corpus: English multi-speaker corpus for CSTR voice cloning
+        </span>
+        <span style="display: block; margin-left: 20px;">
+          toolkit (version 0.92)," University of Edinburgh. The Centre for
+        </span> 
+          <span style="display: block; margin-left: 20px;">
+            Speech Technology Research (CSTR), pp. 271-350, 2019.
+          </span>
+      </p>
+      <p>[5] T. A. Nguyen, W.-N. Hsu, A. D'Avirro, B. Shi, I. Gat, M.
+        <span style="display: block; margin-left: 20px;">
+          Fazel-Zarani, T. Remez, J. Copet, G. Synnaeve, M. Hassid, F. Kreuk,
+        </span>
+        <span style="display: block; margin-left: 20px;">
+          Y. Adi, and E. Duproux, "EXPRESSO: A Benchmark and Analysis"
+        </span>
+        <span style="display: block; margin-left: 20px;"> 
+          of Discrete Expressive Speech Resynthesis," in Interspeech, 2023,
+        </span>
+        <span style="display: block; margin-left: 20px;">
+          pp. 4823-4827.
+        </span>
+      </p>
+    </section>
   </div>
 </body>
 </html>
