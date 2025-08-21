@@ -5,111 +5,223 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fast-VGAN Demo</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #faf4d5;
-      color: #000000;
-      display: flex;
-      font-size: 14pt;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      background: #fff;
-      border-bottom: 1px solid #ccc;
-    }
-
-    nav {
-      position: fixed;
-      width: 220px;
-      height: 100vh;
-      background: #000000;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      z-index: 1000;
-
-    }
-
-    nav h2 {
-      margin-bottom: 20px;
-      font-size: 1.2em;
-      border-bottom: 1px solid #444;
-      padding-bottom: 10px;
-    }
-
-    nav a {
-      color: #bbb;
-      text-decoration: none;
-      margin: 10px 0;
-      transition: color 0.3s;
-    }
-
-    nav a:hover {
-      color: #fff;
-    }
-
-    .content {
-      margin-left: 250px;
-      padding: 2rem;
-      max-width: 1000px;
-      margin-right: auto;
-    }
-
-    section {
-      margin-bottom: 60px;
-    }
-
-    h1, h2, h3 {
-      color: #222;
-    }
-
-    audio {
-      margin: 10px 0;
-      filter: invert(1);
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin: 15px 0;
-    }
-
-    .abstract {
-      background: #faf4d5;
-      padding: 15px;
-      border-left: 4px solid #3c0253;
-      margin: 20px 0;
-    }
-    figure {
-      text-align: center;
-      margin: 1.5rem 0;
-    }
-
-    figcaption {
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 0.5rem;
+    :root{ --nav-h:56px; }
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background-color:#faf4d5;
+      color:#000;
+      display:flex;
+      font-size: clamp(14px,1.2vw,16px);
+      line-height:1.45;
     }
     
+    nav{
+      position:fixed;
+      left:0; top:0;
+      width:220px; height:100vh;
+      background:#000000;
+      color:#fff;
+      display:flex; flex-direction:column;
+      padding:20px;
+      box-shadow:2px 0 5px rgba(0,0,0,0.1);
+      z-index:2000;
+    }
+    nav h2{ margin:0 0 16px; font-size:1.1em; color:#ccc; border-bottom:1px solid #444; padding-bottom:10px; }
+    nav a{ color:#bbb; text-decoration:none; margin:10px 0; transition:color .3s; display:block; }
+    nav a:hover{ color:#fff; }
+    
+    .nav-toggle{
+      display:none;
+      background:#222; color:#fff;
+      border:1px solid #444; border-radius:6px;
+      padding:8px 12px; font-size:0.95em; cursor:pointer;
+    }
+    .nav-trigger{
+      display:block;
+      width:100%;
+      text-align:left;
+      background:transparent;
+      border:none;
+      color:#ccc;
+      font-size:1.1em;
+      font-weight:700;
+      padding:0 0 10px 0;
+      border-bottom:1px solid #444;
+      cursor:pointer;
+    }
+    .nav-links{ display:block; }
+    .nav-panel{ display:none; }
+
+    @media (max-width:900px){
+      nav.is-open .nav-links{ display:flex; }  
+      nav{
+        position: fixed; top: 0; left: 0; right: 0;
+        height: auto;
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px;
+        z-index: 2000;
+        background: #000000;
+      }
+
+      .nav-trigger{
+        border:none;
+        padding:6px 10px;
+        font-size:1em;
+        color:#fff;
+        width: auto;
+        border-bottom: none;
+      }
+
+      .nav-links{ display:none; }
+
+      .nav-panel{
+        position: fixed;
+        top: var(--nav-h); left: 0; right: 0;
+        max-height: calc(100vh - var(--nav-h));
+        background:#000;
+        display:block;
+        padding:12px;
+        border-top:1px solid #222;
+        overflow-y:auto;
+      }
+      .nav-panel a{
+        display:block;
+        color:#fff;
+        text-decoration:none;
+        padding:12px 4px;
+        border-bottom:1px solid #222;
+      }
+      .nav-panel a:last-child{ border-bottom:none; }
+
+      .nav-panel[hidden]{ display:none; }
+    }
+
+    .content{
+      margin-left:250px;
+      padding:2rem;
+      max-width:1000px;
+      margin-right:auto;
+    }
+
+    section{ margin-bottom:60px; scroll-margin-top: calc(var(--nav-h) + 16px); }
+    h1,h2,h3{ color:#222; }
+    h1{ font-size: clamp(22px,2.2vw + 12px,34px); margin:0 0 8px; }
+    h2{ font-size: clamp(18px,1.2vw + 12px,26px); margin:0 0 8px; }
+    h3{ font-size: clamp(16px,1vw + 10px,20px); margin:8px 0; }
+    
+    audio{ display: block; margin:10px auto; width : 220px; max-width:100%; filter: invert(1); }
+    img{ max-width:100%; height:auto; border:1px solid #ccc; border-radius:5px; margin:15px 0; }
+    
+    .abstract{
+      background:#faf4d5; padding:15px; border-left:4px solid #3c0253; margin:20px 0;
+    }
+    
+    figure{ text-align:center; margin:1.5rem 0; }
+    figcaption{ font-size:0.9rem; color:#666; margin-top:0.5rem; }
+    
+    .table-scroll{ 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+    }
+
+    .table-scroll table{ 
+      width: 100%; 
+      border-collapse: collapse; 
+      min-width: 640px;
+      table-layout: auto;
+    }
+
+    .table-scroll th,
+    .table-scroll td{ 
+      padding: 8px; 
+      vertical-align: middle; 
+      text-align: center; 
+      white-space: nowrap;
+    }
+
+    .table-scroll thead th{ 
+      position: sticky; 
+      top: 0;
+      background: #fff; 
+      z-index: 1;
+    }
+
+    .table-scroll{ position: relative; --thead-h: 40px; }
+    .table-scroll tbody{ position: relative; }
+    .table-scroll tbody::before{
+      content: "";
+      display: block;
+      height: var(--thead-h);
+    }
+    
+    @media (max-width:900px){
+      body{ display:block; }
+      thead th{
+        top: var(--nav-h);
+      }
+      
+      nav{
+        position:fixed; top:0;
+        width:100%; height:auto;
+        flex-direction:row; align-items:center; gap:12px;
+        padding:10px 12px;
+        overflow-x:auto;
+      }
+      nav h2{ border:none; padding:0; margin:0; font-size:1em; }
+
+      .nav-toggle{ display:inline-block; }
+      .nav-links{ display:none; gap:12px; align-items:center; }
+      .nav-links a{ margin:0; padding:8px 0; white-space:nowrap; }
+    
+      .content{ 
+        margin: 0; 
+        padding: calc(var(--nav-h) + 12px) 1rem 1rem; 
+        max-width: 100%; 
+      }
+
+      section{ margin-bottom:32px; scroll-margin-top: calc(var(--nav-h) + 12px);}
+      .table-scroll table{ 
+        min-width: 900px;
+      }
+      .table-scroll{ 
+        font-size: 0.95em;
+      }
+      .table-scroll thead th{
+        top: var(--nav-h);
+      }
+    }
+    
+    @media (prefers-reduced-motion: reduce){
+      *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    }
   </style>
 </head>
+
+
 <body>
   <nav>
-    <h2 style="color: #ccc;">Contents</h2>
-    <a href="#abstract">Abstract</a>
-    <a href="#model">Model Introduction</a>
-    <a href="#conversion">Voice Conversion</a>
-    <a href="#f0">Pitch Shift and Time Stretching</a>
-    <a href="#expressive">Expressive Voice Conversion</a>
-    <a href="#references">References</a>
+    <button class="nav-trigger" aria-expanded="false" aria-controls="nav-panel">Contents</button>
+  
+    <div class="nav-links">
+      <a href="#abstract">Abstract</a>
+      <a href="#model">Model Introduction</a>
+      <a href="#conversion">Voice Conversion</a>
+      <a href="#f0">Pitch Shift and Time Stretching</a>
+      <a href="#expressive">Expressive Voice Conversion</a>
+      <a href="#references">References</a>
+    </div>
+  
+    <div id="nav-panel" class="nav-panel" hidden>
+      <a href="#abstract">Abstract</a>
+      <a href="#model">Model Introduction</a>
+      <a href="#conversion">Voice Conversion</a>
+      <a href="#f0">Pitch Shift and Time Stretching</a>
+      <a href="#expressive">Expressive Voice Conversion</a>
+      <a href="#references">References</a>
+    </div>
   </nav>
 
   <div class="content">
@@ -138,100 +250,107 @@
 
     <section id="conversion">
       <h2>Voice Conversion</h2>
+    
       <h3>Baselines</h3>
       <p style="margin-bottom: 20px;">
         The model is compared against two voice conversion methods: ControlVC [2] and HiFi-VC [3]. ControlVC is a conditional GAN-based model that allows for fine-grained control over the conversion process, while HiFi-VC is a high-fidelity voice conversion model that uses a similar architecture but focuses on generating high-quality audio outputs.
         Please note that all speakers are from the VCTK dataset [4] and have been seen during training, and the conversion is performed without any additional fine-tuning.
       </p>
-      <table style="width:100%; border-collapse: collapse; text-align: center;">
-        <thead>
-          <tr>
-            <th>Source Speaker</th>
-            <th>Target Speaker</th>
-            <th>ControlVC</th>
-            <th>HiFi-VC</th>
-            <th>Fast-VGAN</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
-            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp225s2tgtp241none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp225s2tgtp241none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp225s2tgtp241none.wav"></audio></td>
-          </tr>
-          <tr>
-            <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
-            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp227s4tgtp231none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp227s4tgtp231none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp227s4tgtp231none.wav"></audio></td>
-          </tr>
-          <tr>
-            <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
-            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp228s4tgtp229none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp228s4tgtp229none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp228s4tgtp229none.wav"></audio></td>
-          </tr>
-          <tr>
-            <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
-            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp243s2tgtp237none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp243s2tgtp237none.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp243s2tgtp237none.wav"></audio></td>
-          </tr>
-        </tbody>
-      </table>   
+
+      <div class="table-scroll">
+        <table style="width:100%; border-collapse: collapse; text-align: center;">
+          <thead>
+            <tr>
+              <th>Source Speaker</th>
+              <th>Target Speaker</th>
+              <th>ControlVC</th>
+              <th>HiFi-VC</th>
+              <th>Fast-VGAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
+              <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp225s2tgtp241none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp225s2tgtp241none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp225s2tgtp241none.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
+              <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp227s4tgtp231none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp227s4tgtp231none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp227s4tgtp231none.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
+              <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp228s4tgtp229none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp228s4tgtp229none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp228s4tgtp229none.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
+              <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/controlvc/controlvc_srcp243s2tgtp237none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/hifivc/hifivc_srcp243s2tgtp237none.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/none/fastvgan_srcp243s2tgtp237none.wav"></audio></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    
       <h3>Fast-VGAN versions</h3>
-      <table style="width:100%; border-collapse: collapse; text-align: center;">
-        <thead>
-          <tr>
-            <th>Source Speaker</th>
-            <th>Target Speaker</th>
-            <th>Fast-VGAN Amb</th>
-            <th>Fast-VGAN Dil</th>
-            <th>Fast-VGAN Amb+Dil</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
-            <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp225s2tgtp241amb.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp225s2tgtp241dil.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp225s2tgtp241ambdil.wav"></audio></td>
-          </tr>
-          </tr>
-          <tr>
-            <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
-            <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp227s4tgtp231amb.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp227s4tgtp231dil.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp227s4tgtp231ambdil.wav"></audio></td>
-          </tr>
-          <tr>
-            <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
-            <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp228s4tgtp229amb.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp228s4tgtp229dil.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp228s4tgtp229ambdil.wav"></audio></td>
-          </tr>
-          <tr>
-            <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
-            <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp243s2tgtp237amb.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp243s2tgtp237dil.wav"></audio></td>
-            <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp243s2tgtp237ambdil.wav"></audio></td>
-          </tr>
-        </tbody>
-      </table>         
+      <div class="table-scroll">
+        <table style="width:100%; border-collapse: collapse; text-align: center;">
+          <thead>
+            <tr>
+              <th>Source Speaker</th>
+              <th>Target Speaker</th>
+              <th>Fast-VGAN Amb</th>
+              <th>Fast-VGAN Dil</th>
+              <th>Fast-VGAN Amb+Dil</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><p>p225-female</p><audio controls src="audio/originals/real_tgtp225s2.wav"></audio></td>
+              <td><p>p241-male</p><audio controls src="audio/originals/real_tgtp241s4.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp225s2tgtp241amb.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp225s2tgtp241dil.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp225s2tgtp241ambdil.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p227-male</p><audio controls src="audio/originals/real_tgtp227s4.wav"></audio></td>
+              <td><p>p231-female</p><audio controls src="audio/originals/real_tgtp231s2.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp227s4tgtp231amb.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp227s4tgtp231dil.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp227s4tgtp231ambdil.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p228-female</p><audio controls src="audio/originals/real_tgtp228s4.wav"></audio></td>
+              <td><p>p229-female</p><audio controls src="audio/originals/real_tgtp229s2.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp228s4tgtp229amb.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp228s4tgtp229dil.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp228s4tgtp229ambdil.wav"></audio></td>
+            </tr>
+            <tr>
+              <td><p>p243-male</p><audio controls src="audio/originals/real_tgtp243s2.wav"></audio></td>
+              <td><p>p237-male</p><audio controls src="audio/originals/real_tgtp237s4.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb/fastvgan_srcp243s2tgtp237amb.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/dil/fastvgan_srcp243s2tgtp237dil.wav"></audio></td>
+              <td><p> - </p><audio controls src="audio/fvg_versions/amb_dil/fastvgan_srcp243s2tgtp237ambdil.wav"></audio></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section id="f0">
       <h2>Pitch Shift and Time Stretching</h2>
       <h3>Ambitus</h3>
+      <div class="table-scroll">
       <table style="width:100%; border-collapse: collapse; text-align: center;">
         <thead>
           <tr>
@@ -273,8 +392,10 @@
           </tr>
         </tbody>
       </table>  
+    </div>
 
       <h3>Pitch Shift</h3>
+      <div class="table-scroll">
       <table style="width:100%; border-collapse: collapse; text-align: center;">
         <thead>
           <tr>
@@ -316,8 +437,10 @@
           </tr>
         </tbody>
       </table>  
+    </div>
 
       <h3>Phoneme Dilation</h3>
+      <div class="table-scroll">
       <table style="width:100%; border-collapse: collapse; text-align: center;">
         <thead>
           <tr>
@@ -359,11 +482,13 @@
           </tr>
         </tbody>
       </table>  
+    </div>
     </section>
 
-    <section id="expressive"></section>
+    <section id="expressive">
       <h2>Expressive Voice Conversion</h2>
-      <p>The VCTK training data have been augmented with four speakers from the Expresso dataset [5], using only their neutral utterances to allow the model to learn their timbre without exposure to expressive variations. At inference time, the expressive sentences are used from these same speakers to generate input features, allowing to assess the model’s ability to synthesize expressive speech despite never being trained on expressive data.</p>
+      <p>During training we extend VCTK with the neutral sentences from the Expresso dataset [5]. For inference we use the expressive sentences of the Expresso speakers to assess whether the model preserves sound quality for expressivity not seen during training.</p>
+      <div class="table-scroll">
       <table style="width:100%; border-collapse: collapse; text-align: center;">
         <thead>
           <tr>
@@ -412,9 +537,10 @@
           </tr>
         </tbody>
       </table>  
+    </div>
     </section>
 
-    <section id="references"></section>
+    <section id="references">
       <h2>References</h2>
       <p>[1] M. Abrassart, N. Obin and A. Roebel, "Fast-VGAN: Lightweight
         <span style="display: block; margin-left: 20px;"> 
@@ -468,5 +594,100 @@
       </p>
     </section>
   </div>
+  <script>
+    const nav = document.querySelector('nav');
+    const trigger = document.querySelector('.nav-trigger');
+    const panel = document.getElementById('nav-panel');
+    const mq  = window.matchMedia('(max-width: 900px)');
+  
+    function setNavHeightVar(){
+      const h = nav.offsetHeight || 56;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+    }
+  
+    function openPanel(){
+      if (!mq.matches) return;
+      panel.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+      setNavHeightVar();
+    }
+    function closePanel(){
+      panel.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+      setNavHeightVar();
+    }
+    function togglePanel(){
+      if (panel.hidden) openPanel(); else closePanel();
+    }
+  
+    trigger?.addEventListener('click', (e) => {
+      if (!mq.matches) return;
+      e.preventDefault();
+      togglePanel();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!mq.matches) return;
+      if (!panel.hidden && !panel.contains(e.target) && !trigger.contains(e.target)){
+        closePanel();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!mq.matches) return;
+      if (e.key === 'Escape' && !panel.hidden) closePanel();
+    });
+
+    function syncToViewport(e){
+      if(!e.matches){
+        closePanel();
+      }
+      setNavHeightVar();
+    }
+    mq.addEventListener('change', syncToViewport);
+    window.addEventListener('load', setNavHeightVar);
+    window.addEventListener('resize', setNavHeightVar);
+    syncToViewport(mq);
+  
+    function smoothScrollToId(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (mq.matches) closePanel();
+      requestAnimationFrame(() => {
+        const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 0;
+        const extra = mq.matches ? (navH + 8) : 8;
+        const y = el.getBoundingClientRect().top + window.pageYOffset - extra;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      });
+    }
+
+    document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        smoothScrollToId(id);
+      });
+    });
+
+    document.documentElement.style.scrollBehavior = 'smooth';
+  </script>
+  <script>
+    function setTheadHeights(){
+      document.querySelectorAll('.table-scroll').forEach(wrap => {
+        const thead = wrap.querySelector('thead');
+        if (thead){
+          const h = thead.getBoundingClientRect().height;
+          wrap.style.setProperty('--thead-h', h + 'px');
+        }
+      });
+    }
+  
+    window.addEventListener('load', setTheadHeights);
+    window.addEventListener('resize', () => {
+      setTheadHeights();
+    });
+  
+    setTimeout(setTheadHeights, 0);
+  </script>
 </body>
 </html>
